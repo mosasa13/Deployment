@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+  <%- include('../components/headTag.ejs') %>
+  <body>
+    <%- include('./components/header.ejs') %> <%-
+    include('./components/navbar.ejs') %>
+    <div class="mobile-menu-overlay"></div>
+    <div class="main-container">
+      <div class="p-3">
+        <h1>Chats</h1>
+      </div>
+      <div class="pd-ltr-20 xs-pd-20-10">
+        <div class="min-height-200px">
+          <div class="bg-white border-radius-4 box-shadow mb-30">
+            <div class="chat-detail">
+              <div class="chat-profile-header clearfix">
+                <div class="left">
+                  <div class="clearfix">
+                    <div class="chat-profile-photo">
+                      <img src="/img/drashraf.jpeg" alt="" />
+                    </div>
+                    <div class="chat-profile-name">
+                      <h3>Dr Ashraf</h3>
+                      <span>Misr International University</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="chat-box">
+                <div class="chat-desc customscroll">
+                  <ul id="chat_messages"></ul>
+                </div>
+                <div class="chat-footer">
+                  <form id="messageForm">
+                    <div class="chat_text_area pl-4">
+                      <textarea
+                        placeholder="Type your message…"
+                        id="message"
+                      ></textarea>
+                    </div>
+                    <div class="chat_send">
+                      <button class="btn btn-link" type="submit">
+                        <i class="icon-copy ion-paper-airplane"></i>
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- js -->
+    <script src="/vendors/scripts/core.js"></script>
+    <script src="/vendors/scripts/script.min.js"></script>
+    <script src="/vendors/scripts/process.js"></script>
+    <script src="/vendors/scripts/layout-settings.js"></script>
+
+    <script>
+      const chat_messages = document.getElementById("chat_messages");
+
+      function addMyMessage(msg) {
+        const x = `<li class="clearfix admin_chat">
+            <span class="chat-img">
+              <img src="/vendors/images/chat-img2.jpg" alt="" />
+            </span>
+            <div class="chat-body clearfix">
+              <p>${msg}</p>
+                <div class="chat_time">09:40PM</div>
+            </div>
+          </li>`;
+        chat_messages.insertAdjacentHTML("beforeend", x);
+      }
+
+      function addDrAshrafMessage(msg) {
+        const x = `<li class="clearfix">
+            <span class="chat-img">
+              <img src="/img/drashraf.jpeg" alt="" />
+            </span>
+            <div class="chat-body clearfix">
+              <p>${msg}</p>
+                <div class="chat_time">09:40PM</div>
+            </div>
+          </li>`;
+        chat_messages.insertAdjacentHTML("beforeend", x);
+      }
+    </script>
+
+    <script type="module">
+      import showMsg from "/js/toastify.js";
+
+      document.getElementById("messageForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const message = document.getElementById("message").value.trim();
+        document.getElementById("message").value = "";
+        addMyMessage(message);
+
+        fetch("/admin/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.errMsg) {
+              console.log(data);
+              showMsg(data.errMsg.error.message, "red");
+            } else {
+              addDrAshrafMessage(data.response);
+            }
+          })
+          .catch((error) => {
+            showMsg("Error: " + error, "red");
+          });
+      });
+    </script>
+    <script>
+      setTimeout(function () {
+        addDrAshrafMessage(
+          "Hi , I am Dr.Ashraf .. your best assistant .. how can I help you ?"
+        );
+      }, 1000);
+    </script>
+  </body>
+</html>

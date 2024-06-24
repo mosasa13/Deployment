@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shop</title>
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+    <!-- Bootstrap -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+    />
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/shop.css" />
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <header><%- include('./components/nav.ejs') %></header>
+
+    <main>
+      <%- include('./cart.ejs') %>
+
+      <div class="container">
+        <% if (list && list.length > 0) { %>
+        <div class="row mt-5" id="filter-buttons">
+          <div class="col-12">
+            <button class="btn mb-2 me-1 active" data-filter="all">
+              Show all
+            </button>
+            <% list.reduce((acc, item) => { if (!acc.includes(item.category)) {
+            acc.push(item.category); } return acc; }, []).forEach(category => {
+            %>
+            <button class="btn mb-2 mx-1" data-filter="<%= category %>">
+              <%= category %>
+            </button>
+            <% }); %>
+          </div>
+        </div>
+
+        <div class="row px-2 mt-4" id="filterable-cards">
+          <% list.forEach(item => { %>
+          <div
+            class="col-md-4 col-sm-6 mb-4 filter-item"
+            data-type="<%= item.category %>"
+          >
+            <div class="card p-0">
+              <img src="<%= item.images[0] %>" alt="<%= item.name %>" />
+              <div class="card-body">
+                <h6 class="card-title"><%= item.name %></h6>
+                <p class="card-text">
+                  <%= item.price %> <i class="fa-solid fa-dollar-sign"></i>
+                </p>
+                <button onclick="addToCart(this)" data-id="<%= item._id %>">
+                  add to cart
+                </button>
+              </div>
+            </div>
+          </div>
+          <% }); %>
+        </div>
+
+        <% } else { %>
+        <div class="row">
+          <div class="col-12">
+            <p class="p-5">No services available.</p>
+          </div>
+        </div>
+        <% } %>
+      </div>
+    </main>
+
+    <%- include('./components/footer.ejs') %>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const filterButtons = document.querySelectorAll(
+          "#filter-buttons button"
+        );
+        const filterItems = document.querySelectorAll(".filter-item");
+
+        filterButtons.forEach((button) => {
+          button.addEventListener("click", function () {
+            const filterValue = this.dataset.filter;
+
+            filterItems.forEach((item) => {
+              if (filterValue === "all" || item.dataset.type === filterValue) {
+                item.classList.remove("d-none");
+                item.classList.add("d-block"); // Ensure item is displayed
+              } else {
+                item.classList.remove("d-block");
+                item.classList.add("d-none"); // Hide item
+              }
+            });
+
+            // Update active button
+            filterButtons.forEach((btn) => btn.classList.remove("active"));
+            this.classList.add("active");
+          });
+        });
+      });
+    </script>
+    <script>
+      function addToCart(btn) {
+        const Id = btn.getAttribute("data-id");
+
+        const x = window.location.href.split("/").length;
+
+        if (x !== 4) {
+          fetch(`/user/${window.location.href.split("/")[4]}/cart`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ Id, quantity: 1 }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.errMsg) {
+                alert(data.errMsg);
+              }
+            })
+            .catch((error) => {
+              alert("Error: " + error);
+            });
+        } else {
+          alert("Should login first");
+        }
+      }
+    </script>
+  </body>
+</html>
